@@ -24,7 +24,7 @@ class SFDC(object):
 		""" Read configuration file and establish connection to SFDC """
 		try:
 			with open(config_path) as f:
-				sfdc_config = yaml.load(f)
+				sfdc_config = yaml.load(f,Loader=yaml.SafeLoader)
 		except:
 			print("[ERROR]: Cannot load config file %s" % config_path)
 			return False
@@ -35,7 +35,6 @@ class SFDC(object):
 		   	return False
 
 		self._api_version = "50.0"
-		is_sandbox = False
 		token = ''
 
 		temp_list = sfdc_config.split(' ')
@@ -43,13 +42,11 @@ class SFDC(object):
 		sfdc_config['user'] = temp_list[0].split(':')[1]
 		sfdc_config['password'] = temp_list[1].split(':')[1]
 		sfdc_config['token'] = temp_list[2].split(':')[1]
+		sfdc_config['domain'] = temp_list[3].split(':')[1]
 
 		if 'api_version' in sfdc_config:
 			self._api_version = str(sfdc_config['api_version'])
-		if 'sandbox' in sfdc_config:
-			is_sandbox = sfdc_config['sandbox']
 		if 'token' in sfdc_config:
-			print(sfdc_config)
 			token = str(sfdc_config['token'])
 
 		try:
@@ -59,7 +56,7 @@ class SFDC(object):
 								  version=self._api_version,
 								  security_token=token,
 								  session=session,
-								  domain='test')
+								  domain=sfdc_config['domain'])
 		except Exception as e:
 			print("[ERROR]: Cannot connect to SFDC", str(e))
 			return False

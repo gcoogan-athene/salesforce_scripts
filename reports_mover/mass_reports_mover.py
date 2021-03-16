@@ -3,7 +3,7 @@ import argparse
 import sfdc
 import sys
 
-def move_reports(input_file, folder_name):
+def move_reports(input_file_name, folder_name):
 	""" Moves Salesforce Reports to a folder """
 	sf = sfdc.SFDC('sfdc.yaml')
 	if not sf.connected:
@@ -21,10 +21,15 @@ def move_reports(input_file, folder_name):
 	folder_id = record.get('Id')
 	print("[INFO]: Folder %s, ID: %s" % (folder_name, folder_id))
 
-	with open(input_file, 'r') as input_file:
+	with open(input_file_name, 'r',encoding='utf-16') as input_file:
 		report_ids = filter(None, input_file.read().splitlines())
 
-	print("[INFO]: Moving %d reports" % (len(report_ids)))
+	with open(input_file_name, 'r',encoding='utf-16') as input_file2:
+		report_ids_2 = filter(None, input_file2.read().splitlines())
+
+	my_len = len([x for x in report_ids_2])
+
+	print("[INFO]: Moving %d reports" % (my_len))
 	params = json.dumps({
 		"reportMetadata": {
 			"folderId": folder_id
@@ -41,8 +46,7 @@ def move_reports(input_file, folder_name):
 			print("[FAILED]: Report %s, Reason: %s" % (report_id, reason))
 			failed_reports += 1
 
-	print ("[DONE] Failed to move %d reports out of %d" 
-		   % (failed_reports, len(report_ids)))
+	print ("[DONE] Failed to move %d reports out of %d" % (failed_reports, my_len))
 
 if __name__ == "__main__":
 	cli_parser = argparse.ArgumentParser(description="Mass Reports Mover")
