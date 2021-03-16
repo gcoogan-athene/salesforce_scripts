@@ -1,29 +1,30 @@
 import json
 import argparse
 import sfdc
+import sys
 
 def move_reports(input_file, folder_name):
 	""" Moves Salesforce Reports to a folder """
 	sf = sfdc.SFDC('sfdc.yaml')
 	if not sf.connected:
-		print "[ERROR]: No connection to Salesforce"
+		print("[ERROR]: No connection to Salesforce")
 		return False
 
 	soql = "SELECT Id FROM Folder WHERE Name='%s'" % folder_name
 	results = sf.run_soql(soql)
 	# We only expect one result as folder name is unique
 	if not results or results.get('totalSize', -1) != 1:
-		print "[ERROR]: Cannot find folder %s" % folder_name
+		print("[ERROR]: Cannot find folder %s" % folder_name)
 		return False
 
 	record = results.get('records')[0]
 	folder_id = record.get('Id')
-	print "[INFO]: Folder %s, ID: %s" % (folder_name, folder_id)
+	print("[INFO]: Folder %s, ID: %s" % (folder_name, folder_id))
 
 	with open(input_file, 'r') as input_file:
 		report_ids = filter(None, input_file.read().splitlines())
 
-	print "[INFO]: Moving %d reports" % (len(report_ids))
+	print("[INFO]: Moving %d reports" % (len(report_ids)))
 	params = json.dumps({
 		"reportMetadata": {
 			"folderId": folder_id
@@ -37,7 +38,7 @@ def move_reports(input_file, folder_name):
 				reason = json_resp[0].get('errorCode', 'N/A')
 			except:
 				reason = 'N/A'
-			print "[FAILED]: Report %s, Reason: %s" % (report_id, reason)
+			print("[FAILED]: Report %s, Reason: %s" % (report_id, reason))
 			failed_reports += 1
 
 	print ("[DONE] Failed to move %d reports out of %d" 
