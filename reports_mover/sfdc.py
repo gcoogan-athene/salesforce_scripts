@@ -10,7 +10,7 @@ SFDC_SERVICE_URL = "https://{0}.salesforce.com/services/data/v{1}"
 
 def log_exception(ex_msg):
 	if DEBUG:
-		print("[EXCEPTION]: %s" % str(e))
+		print("[EXCEPTION]: %s" % str(ex_msg))
 
 class SFDC(object):
 	def __init__(self, config_path):
