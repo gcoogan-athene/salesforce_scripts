@@ -1,6 +1,8 @@
 import requests
 import yaml
 import json
+from ssl import SSLError
+import time
 
 from simple_salesforce import Salesforce
 
@@ -142,3 +144,40 @@ class SFDC(object):
 			log_exception(e)
 			return None
 		return result
+
+	def get_custom_settings(self, developername):
+		"""Select all custom settings fields from custom metadata type that are"""
+		query = "select value__c from custom_setting__mdt where developername = '{}'".format(developername)
+		uri = "{}/services/data/v{}/query/?q={}".format(self._base_url, self._api_version, query)
+		tries = 3
+		headers = self._get_headers()
+		headers['Content-Type'] = 'application/json'
+		for i in range(tries):
+			try:
+				resp = requests.get(uri, headers=headers)
+				resp.raise_for_status()
+				return resp.json()['records']
+			except (ConnectionError, SSLError):
+				if i < tries - 1:
+					time.sleep(5)
+					print('Connection Error Retry: ' + str(i))
+					continue
+				else:
+					raise
+			break
+
+	def get_folder_exclude_list(self):
+		"""Get the list of folders to exclude"""
+		recs = self.get_custom_settings('Report_Folder_Exclude_List')
+		exclude_list = None
+		for row in recs:
+			exclude_list = row['Value__c']
+		return exclude_list
+
+	def get_folder_exclude_terms(self):
+		"""Get the list of folders to exclude"""
+		recs = self.get_custom_settings('Report_Folder_Exclude_Terms')
+		exclude_list = None
+		for row in recs:
+			exclude_list = row['Value__c']
+		return exclude_list

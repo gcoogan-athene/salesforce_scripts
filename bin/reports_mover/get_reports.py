@@ -17,6 +17,7 @@ RESULTS_OUTPUT_FILE = 'reports.txt'
 REPORT_IDS_OUTPUT_FILE = 'report_ids.txt'
 
 def save_to_file(filename, lines):
+	""" Save to file """
 	with codecs.open(filename, 'wb', 'utf-16') as output_file:
 		output_file.write('\r\n'.join(lines))
 
@@ -27,6 +28,20 @@ def dump_reports(soql):
 		print ("[ERROR]: No connection to Salesforce")
 		return False
 
+	# Get list to exclude
+	exclude_list = []
+	# exclude_str = sf.get_folder_exclude_list()
+	# if exclude_str:
+	# 	exclude_list = exclude_str.split(',')
+	exclude_list = ['Discovery Data Reports','Legal Archive','Athene Admin Reports','Campaign Admin Reports','Mass Action Test Reports','MFA','Qualtrics Reports']
+
+	# Get terms to exclude
+	exclude_terms_list = []
+	# exclude_terms_str = sf.get_folder_exclude_terms()
+	# if exclude_terms_str:
+	# 	exclude_terms_list = exclude_terms_str.split(',')
+	exclude_terms_list = ['ABRT','SIU','Campaign Admin','Athene Admin']
+
 	results = sf.run_soql(soql)
 	if not results or not results.get('totalSize', 0):
 		print ("[INFO]: No reports matching search criterion")
@@ -36,12 +51,19 @@ def dump_reports(soql):
 	report_ids = []
 	lines = []
 	for record in results.get('records'):
-		line = "%s,%s,%s,%s" % (record.get('Id'),
-								record.get('FolderName'), 
-							 	record.get('Name'), 
-							 	record.get('LastRunDate'))
-		lines.append(line)
-		report_ids.append(record.get('Id'))
+		folder_name = record.get('FolderName')
+		report_name = record.get('Name')
+		if exclude_list and folder_name in exclude_list:
+			print('Skipping [',report_name,'] due to Folder Name -',folder_name)
+		elif exclude_terms_list and [ele for ele in exclude_terms_list if(ele in folder_name)]:
+			print('Skipping [',report_name,'] due to term found in Folder Name -',folder_name)
+		else:
+			line = "%s,%s,%s,%s" % (record.get('Id'),
+									folder_name, 
+									report_name, 
+									record.get('LastRunDate'))
+			lines.append(line)
+			report_ids.append(record.get('Id'))
 
 	save_to_file(RESULTS_OUTPUT_FILE, lines)
 	save_to_file(REPORT_IDS_OUTPUT_FILE, report_ids)
@@ -80,4 +102,5 @@ def main():
 	dump_reports(soql)
 
 if __name__ == "__main__":
+	sf = sfdc.SFDC('sfdc.yaml')
 	main()
