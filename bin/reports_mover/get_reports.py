@@ -33,14 +33,24 @@ def dump_reports(soql):
 	# exclude_str = sf.get_folder_exclude_list()
 	# if exclude_str:
 	# 	exclude_list = exclude_str.split(',')
-	exclude_list = ['Discovery Data Reports','Legal Archive','Athene Admin Reports','Campaign Admin Reports','Mass Action Test Reports','MFA','Qualtrics Reports']
+	exclude_list = ['Discovery Data Reports',
+					'Legal Archive',
+					'Athene Admin Reports',
+					'Campaign Admin Reports',
+					'MFA',
+					'Qualtrics Reports']
 
 	# Get terms to exclude
 	exclude_terms_list = []
 	# exclude_terms_str = sf.get_folder_exclude_terms()
 	# if exclude_terms_str:
 	# 	exclude_terms_list = exclude_terms_str.split(',')
-	exclude_terms_list = ['ABRT','SIU','Campaign Admin','Athene Admin']
+	exclude_terms_list = [
+		'ABRT',
+		'SIU',
+		'Campaign Admin',
+		'Athene Admin',
+		'Mass Action']
 
 	results = sf.run_soql(soql)
 	if not results or not results.get('totalSize', 0):
